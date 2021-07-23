@@ -1,0 +1,77 @@
+
+def linear(point,eff=5):
+    x,y,xy,squx,squy,yxs=[],[],[],[],[],"{0:.5}"
+    for i in point:
+        x.append(i[0])
+        y.append(i[1])
+    sx,sy=sum(x),sum(y),
+    ax,ay =sx/len(x), sy/len(y)
+    for i in range(len(x)):
+        xy.append(x[i]*y[i])
+        squx.append(x[i]**2)
+        squy.append(y[i]**2)
+    bup=sum(xy) - len(x) * ax * ay
+    bdown=sum(squx) - len(x) * ax * ax
+    r=bup/(bdown**(1/2) * (sum(squy) - len(y) * ay * ay)**(1/2))
+    b = bup/bdown
+    a = ay-b*ax
+    if eff !=5:
+        import re
+        yxs = re.sub(r"5",str(eff) , yxs)
+    af,bf = yxs.format(a),yxs.format(b)
+
+    if a>0:
+        print("原始线性回归方程为：\n y = " + str(b) + "x + " + str(a))
+        print("简写线性回归方程为：\n y = " + str(bf) + "x + " + str(af))
+    elif a==0:
+        print("原始线性回归方程为：\n y = " + str(b) + "x")
+        print("简写线性回归方程为：\n y = " + str(bf) + "x")
+
+    elif a<0:
+        print("原始线性回归方程为：\n y = " + str(b) + "x " + str(a))
+        print("简写线性回归方程为：\n y = " + str(bf) + "x " + str(af))
+
+    print("相关系数：",r**2)
+
+if __name__ == '__main__':
+    linear([(0,0),(5.83*10**-4,0.100),(8.08*10**-4,0.139),(1.00*10**-3,0.149),(1.17*10**-3,0.171),(1.31*10**-3,0.184)])
+    print()
+    linear([(0, 0),
+            (0.0035 / 6, 0.1),
+            (0.0035 * 1.5 / 6.5, 0.139),
+            (0.0035 * 2 / 7, 0.149),
+            (0.0035 * 2.5 / 7.5, 0.171),
+            (0.0035 * 3 / 8, 0.184)])
+
+
+
+def kefl(flo,ints):
+    import re
+    repla = "{0:.x}"
+    repla=re.sub(r"x",str(ints),repla)
+    return repla.format(flo)
+
+# import math
+# print(kefl(math.pi,6))
+
+
+
+
+print(pow(0.000773,2))
+print(pow(0.00105,2))
+print(pow(0.00131,2))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
