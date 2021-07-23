@@ -1,0 +1,27 @@
+def gif_transform(dir,name):
+        try:
+                import os.path
+                import os
+                import imageio  # 外部库
+
+                GIF = []
+                filepath = "C:\\SLS\\photo_ache"+"\\"+dir  # 文件路径
+                filenames = os.listdir(filepath)
+                GIF.append(imageio.imread(filepath + "\\" + filenames[0]))
+                imageio.mimsave(filepath + "\\" + name +'.gif', GIF, duration=0)
+        except NotADirectoryError as e:
+                print("Error: gif转换失败-"+str(e))
+        except IndexError as e:
+                if str(e)=="list index out of range":
+                        pass
+                else:
+                        print("Error: gif转换失败-未知原因")
+        except ValueError as e:
+                if str(a)=="Could not find a format to read the specified file in single-image mode":
+                        pass
+                else:
+                        print("Error: gif转换失败-未知原因")
+        except:
+                print("Error: gif转换失败")
+                import tkinter.messagebox
+                tkinter.messagebox.showerror(title="提示",message="出现了未知的错误，请重启程序")
