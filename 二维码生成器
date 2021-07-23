@@ -1,0 +1,121 @@
+
+class QR_creat():
+    def __init__(self,dic):
+        self.dic=dic
+
+    def default(self):
+        import tkinter
+        import tkinter.messagebox
+
+        window = tkinter.Tk()
+        window.title("二维码生成器")
+        # window.geometry('500x250')
+        from login_out.window_center import set_win_center
+        window.update()
+        set_win_center(window, 500, 250)
+        window.iconbitmap('CaDt.ico')
+
+        l = tkinter.Label(window, bg='cyan', width=100, text='请输入内容')
+        l.pack()
+        e1 = tkinter.Text(window, height=6)
+        e1.pack()
+        l4 = tkinter.Label(window, width=30, text=' \n')  # 显示高度，可要可不要
+        l4.pack()
+        def comf():
+            strs=e1.get(0.0, "end")
+            if strs=="" or strs==None or strs==" " or strs=="\n":
+                tkinter.messagebox.showinfo(title='提示', message="输入框不能为空")
+            else:
+                window.destroy()
+                S=QR_comf(self.dic,strs)
+                S.default()
+
+        def back():
+            window.destroy()
+            from login_out.mainForm import Pro_main
+            A=Pro_main(self.dic)
+            A.default()
+        b1 = tkinter.Button(window, text="确认", font=('Arial', 12), width=10, height=1, command=comf,bg="GhostWhite",relief="ridge")
+        b1.pack()
+        b2 = tkinter.Button(window, text="返回", font=('Arial', 12), width=10, height=1, command=back,bg="GhostWhite",relief="ridge")
+        b2.pack()
+
+        window.mainloop()
+
+class QR_comf():
+    def __init__(self,dic,strs):
+        self.strs=strs
+        self.dic=dic
+
+    def default(self):
+
+        import tkinter
+        import tkinter.messagebox
+
+        import qrcode
+        img = qrcode.make(self.strs)
+
+        import os.path
+        if os.path.exists("C:\\SLS\\photo_ache\\QR\\QRache.png"):
+            os.remove("C:\\SLS\\photo_ache\\QR\\QRache.png")
+        if os.path.exists("C:\\SLS\\photo_ache\\QR\\QRache.gif"):
+            os.remove("C:\\SLS\\photo_ache\\QR\\QRache.gif")
+        with open("C:\\SLS\\photo_ache\\QR\\QRache.png" , "wb") as file:
+            img.save(file)
+        from login_out.transform import gif_transform
+        gif_transform("QR","QRache")
+
+        window = tkinter.Tk()
+        window.title("二维码生成器")
+        # window.geometry('500x250')
+        from login_out.window_center import set_win_center
+        window.update()
+        set_win_center(window, 600, 500)
+        window.iconbitmap('CaDt.ico')
+        img_png = tkinter.PhotoImage(file='C:\\SLS\\photo_ache\QR\QRache.gif')
+        label_img = tkinter.Label(window, image=img_png)
+        label_img.pack()
+
+        import random
+        def back():
+            window.destroy()
+            B=QR_creat(self.dic)
+            B.default()
+            import os.path
+            if os.path.exists("C:\\SLS\\photo_ache\\QR\\QRache.png"):
+                os.remove("C:\\SLS\\photo_ache\\QR\\QRache.png")
+            if os.path.exists("C:\\SLS\\photo_ache\\QR\\QRache.gif"):
+                os.remove("C:\\SLS\\photo_ache\\QR\\QRache.gif")
+
+        def save():
+            import os.path
+            import os
+            if not os.path.exists("C:\\SLS_photo"):
+                os.makedirs("C:\\SLS_photo")
+
+            tkinter.messagebox.showinfo(title='提示', message="已保存在C盘SLS_photo文件夹里！")
+
+            import qrcode
+            img = qrcode.make(self.strs)
+            import time
+            time_list=list(time.localtime())
+            for i in range(len(time_list)):
+                time_list[i]=str(time_list[i])
+
+            with open("C:\\SLS_photo\\QR"+str("".join(time_list)) +".png", "wb") as file:
+                img.save(file)
+            if os.path.exists("C:\\SLS\\photo_ache\\QR\\QRache.png"):
+                os.remove("C:\\SLS\\photo_ache\\QR\\QRache.png")
+            if os.path.exists("C:\\SLS\\photo_ache\\QR\\QRache.gif"):
+                os.remove("C:\\SLS\\photo_ache\\QR\\QRache.gif")
+
+            back()
+
+        l4 = tkinter.Label(window, width=30, text=' \n')  # 显示高度，可要可不要
+        l4.pack()
+        b1 = tkinter.Button(window, text="保存", font=('Arial', 12), width=10, height=1, command=save,bg="GhostWhite",relief="ridge")
+        b1.pack()
+        b2 = tkinter.Button(window, text="返回", font=('Arial', 12), width=10, height=1, command=back,bg="GhostWhite",relief="ridge")
+        b2.pack()
+
+        window.mainloop()
