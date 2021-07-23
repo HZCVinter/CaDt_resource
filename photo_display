@@ -1,0 +1,38 @@
+class Photo_display():
+    def __init__(self,dic,url,length=700,width=600):
+        self.url=url
+        self.dic=dic
+        self.length=length
+        self.width=width
+
+    def default(self):
+            import tkinter
+            import tkinter.messagebox
+            window = tkinter.Tk()
+            window.title("图片显示")
+            # window.geometry('500x250')
+            from login_out.window_center import set_win_center
+            window.update()
+            set_win_center(window,self.length,self.width)
+            window.iconbitmap('CaDt.ico')
+
+            img_png = tkinter.PhotoImage(file='C:\\SLS\\photo_ache\\'+self.url)
+            label_img = tkinter.Label(window, image=img_png)
+            label_img.pack()
+
+            def back():
+                window.destroy()
+                if self.dic == {}:
+                    from Login import Login
+                    L = Login()
+                    L.default()
+                else:
+                    from mainForm import Pro_main
+                    P = Pro_main(self.dic)
+                    P.default()
+
+            lh = tkinter.Label(window, width=30, text='')  # 显示宽度，可要可不要
+            lh.pack()
+            b2 = tkinter.Button(window, text="返回", font=('Arial', 12), width=10, height=1, command=back,bg="GhostWhite",relief="ridge")
+            b2.pack()
+            window.mainloop()
