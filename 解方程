@@ -1,0 +1,471 @@
+
+# 合并数字的函数
+def joins(spllst_true):
+    ii,finii,djo=0,0,0
+    spllst_select = []
+    while ii < len(spllst_true) - 1:
+        if ii + 1 <= len(spllst_true) - 1:
+            if spllst_true[ii].isnumeric() and spllst_true[ii + 1].isnumeric():
+                jo = "".join([spllst_true[ii], spllst_true[ii + 1]])
+                spllst_select.append(jo)
+                ii += 2
+            elif spllst_true[ii]==".":
+                jo = ".".join([spllst_true[ii-1], spllst_true[ii + 1]])
+                spllst_select.append(jo)
+                ii += 2
+            else:
+                if spllst_true[ii+1]!=".":
+                    spllst_select.append(spllst_true[ii])
+                ii += 1
+            finii = ii
+    if finii!=len(spllst_true):
+        spllst_select.append(spllst_true[len(spllst_true)-1])
+    for ii in range(len(spllst_select)-1):
+        if spllst_select[ii].isnumeric() and spllst_select[ii+1].isnumeric():
+            djo +=1
+    if djo == 0:
+        return spllst_select
+    else:
+        return joins(spllst_select)
+
+# 提取系数的函数
+def extractco(spllst_select,coefficient,power,ai=0):
+    if ai>1:
+        value=0
+        for i in range(len(spllst_select)):
+            if spllst_select[i].isalpha() and i >= 1 and spllst_select[i - 1].isnumeric() and spllst_select[i + 1] == "^" and \
+                    spllst_select[i + 2] == str(ai):
+                if spllst_select[i - 2] == "-" and spllst_select[i + 1] == "^":
+                    value = float(spllst_select[i - 1]) * -1
+                else:
+                    value = float(spllst_select[i - 1])
+            elif spllst_select[i].isalpha() and i == 0 and spllst_select[i + 1] == "^" and spllst_select[i + 2] ==str(ai):
+                value = 1
+            elif spllst_select[i].isalpha() and not spllst_select[i - 1].isnumeric() and spllst_select[i + 1] == "^" and \
+                    spllst_select[i + 2] ==str(ai):
+                value = 1
+        coefficient[ai-1]=value
+        return extractco(spllst_select,coefficient,power, ai-1)
+    elif ai==1:
+        value=0
+        for i in range(len(spllst_select)):
+            if spllst_select[i].isalpha() and i>=1 and spllst_select[i-1].isnumeric() and spllst_select[i+1]!="^":
+                if spllst_select[i-2]=="-" and spllst_select[i+1]!="^":
+                    value = float(spllst_select[i - 1]) *-1
+                else:
+                    value = float(spllst_select[i - 1])
+            elif spllst_select[i].isalpha() and i==0 and spllst_select[i+1]!="^":
+                value=1
+            elif spllst_select[i].isalpha() and not spllst_select[i-1].isnumeric() and spllst_select[i+1]!="^":
+                value=1
+        coefficient[ai-1]=value
+        return coefficient
+    return coefficient
+
+# 计算指定x下指定一元多次幂方程的值
+def joinxandco(coefficient,constant,i,x):
+    if i!=0:
+        return coefficient[i-1]* pow(x,i) + joinxandco(coefficient,constant,i-1,x)
+    else:
+        return constant
+
+
+def dichotomy(start,end,coefficient_finally,constant,power,minerror):
+    mid=(start+end)/2
+    value_mid=joinxandco(coefficient_finally,constant,power,mid)
+    value_end = joinxandco(coefficient_finally, constant, power, end)
+    if value_mid==0:
+        return mid
+    if end-start>=pow(10,-minerror+1):
+        if value_mid*value_end<0:
+            return dichotomy(mid,end,coefficient_finally,constant,power,minerror)
+        else:
+            return dichotomy(start,mid,coefficient_finally,constant,power,minerror)
+    else:
+        return [round(start,minerror),round(end,minerror)]
+
+
+
+
+# 运算函数
+# list即方程 ， max_final_settion即最大筛选数字， minerror即二分法下的小数位数
+
+def solfuc(lst,max_final_settion=101,minerror=5):
+    length=len(lst)
+    exe_dic = {"x": 0, "y": 0, "z": 0, "a": 0, "b": 0}
+    total_select,spllst_select=[],[]
+    unknva=0
+    unmax=0
+    power=1
+    import re
+    for i in range(length):
+        spllst=re.split(r"",lst[i])
+        spllst_true=[]
+        for ii in spllst:
+            if ii.isalnum() or ii == "+" or ii=="=" or ii=="-" or ii=="*" or ii=="/" or ii=="%" or ii=="^" or ii==".":
+                spllst_true.append(ii)
+        spllst_select = joins(spllst_true)
+        total_select.append(spllst_select)
+        for i in range(len(spllst_select)):
+            for ii in "xyzab":
+                if spllst_select[i]==ii:
+                    if exe_dic[spllst_select[i]]==0:
+                        exe_dic[spllst_select[i]]+=1
+            if spllst_select[i]=="^":
+                if float(spllst_select[i+1])>power:
+                    power=int(spllst_select[i+1])
+        print(spllst_select)
+        unknva=sum(list(exe_dic.values()))
+        if unknva>unmax:
+            unmax=unknva
+    # 解一元一次方程
+    if unknva==1 and power==1:
+        dicadd=[]
+        dicremove=[]
+        valuexnum=0
+        valueresult=0
+        valuex=""
+        for i in range(len(spllst_select)):
+            if spllst_select[i].isalpha() and i>=1 and spllst_select[i-1].isnumeric():
+                valuex=spllst_select[i]
+                if spllst_select[i-2]=="-":
+                    valuexnum = float(spllst_select[i - 1]) *-1
+                else:
+                    valuexnum = float(spllst_select[i - 1])
+            elif spllst_select[i].isalpha() and i==0:
+                valuexnum=1
+                valuex = spllst_select[i]
+            elif spllst_select[i].isalpha() and not spllst_select[i-1].isnumeric():
+                valuexnum=1
+                valuex = spllst_select[i]
+
+
+
+
+            if spllst_select[i]=="=":
+                if spllst_select[i+1]=="-":
+                    valueresult = -float(spllst_select[i+2])
+                else:
+                    valueresult = float(spllst_select[i+1])
+
+            if spllst_select[i]=="+" and not spllst_select[i+2].isalpha() and not spllst_select[i+1].isalpha():
+                dicadd.append(float(spllst_select[i+1]))
+            if spllst_select[i]=="-" and not spllst_select[i+1].isalpha() and spllst_select[i-1]!="=" and not spllst_select[i+2].isalpha():
+                dicremove.append(float(spllst_select[i+1]))
+            # new
+            if i==0 and not spllst_select[i+1].isalpha():
+                try:
+                    dicadd.append(float(spllst_select[i]))
+                except ValueError as e:
+                    if str(e)[:38:]=="invalid literal for int() with base 10":
+                        dicadd.append(float(spllst_select[i]))
+        addsum=sum(dicadd)
+        removesum=sum(dicremove)
+        resultx=(valueresult + removesum - addsum)/valuexnum
+        return valuex+"="+str(resultx)
+
+    # 解二元一次方程 ax+by+c=z
+    if unknva==2 and power==1:
+        valuex_a = []
+        valuey_b = []
+        value_c = []
+        value_z=[]
+        for i in range(2):
+            spllst_select=total_select[i]
+            dicadd = []
+            dicremove = []
+            for ii in range(len(spllst_select)):
+                if spllst_select[ii]=="x" and ii >= 1 and spllst_select[ii-1].isnumeric():
+                    if spllst_select[ii - 2] == "-":
+                        valuex_a.append(float(spllst_select[ii - 1]) * -1)
+                    else:
+                        valuex_a.append(float(spllst_select[ii - 1]))
+                elif spllst_select[ii]=="x" and ii == 0:
+                    valuex_a.append(1)
+                elif spllst_select[ii]=="x" and not spllst_select[ii - 1].isnumeric():
+                    valuex_a.append(1)
+
+                if spllst_select[ii]=="y" and ii >= 1 and spllst_select[ii-1].isnumeric():
+                    if spllst_select[ii - 2] == "-":
+                        valuey_b.append(float(spllst_select[ii - 1]) * -1)
+                    else:
+                        valuey_b.append(float(spllst_select[ii - 1]))
+                elif spllst_select[ii]=="y" and ii == 0:
+                    valuey_b.append(1)
+                elif spllst_select[ii]=="y" and not spllst_select[ii - 1].isnumeric():
+                    valuey_b.append(1)
+                if spllst_select[ii] == "=":
+                    if spllst_select[ii+1]=="-":
+                        value_z.append(float(spllst_select[ii + 2])*-1)
+                    else:
+                        value_z.append(float(spllst_select[ii + 1]))
+                if spllst_select[ii] == "+" and not spllst_select[ii+2].isalpha() and not spllst_select[ii+1].isalpha():
+                    dicadd.append(float(spllst_select[ii + 1]))
+                if spllst_select[ii] == "-" and not spllst_select[ii+1].isalpha() and spllst_select[ii-1]!="=" and not spllst_select[ii+2].isalpha() :
+                    dicremove.append(float(spllst_select[ii + 1]))
+
+                if ii == 0 and not spllst_select[ii + 1].isalpha():
+                    try:
+                        dicadd.append(float(spllst_select[ii]))
+                    except ValueError as e:
+                        if str(e)[:38:] == "invalid literal for int() with base 10":
+                            dicadd.append(float(spllst_select[ii]))
+
+
+            addsum = sum(dicadd)
+            removesum = sum(dicremove)
+            value_c.append(addsum-removesum)
+        valuey_up=valuex_a[0]*value_z[1]/valuex_a[1] -value_z[0] - valuex_a[0]*value_c[1]/valuex_a[1] + value_c[0]
+        valuey_down=valuex_a[0]*valuey_b[1]/valuex_a[1] - valuey_b[0]
+        valuey = valuey_up/valuey_down
+        valuex = (value_z[0]-value_c[0]- valuey*valuey_b[0])/valuex_a[0]
+        return "x="+str(valuex)+" , "+"y="+str(valuey)
+
+    # 解一元二次方程 ax^2+bx+c=z
+    if unknva==1 and power==2:
+        dicadd=[]
+        dicremove=[]
+        value_a=0
+        value_b=0
+        value_z=0
+        value_k=0
+        valuex=""
+        for i in range(len(spllst_select)):
+            if spllst_select[i].isalpha() and i>=1 and spllst_select[i-1].isnumeric() and spllst_select[i+1]=="^":
+                valuex = spllst_select[i]
+                if spllst_select[i-2]=="-" and spllst_select[i+1]=="^":
+                    value_a = float(spllst_select[i - 1]) *-1
+                else:
+                    value_a = float(spllst_select[i - 1])
+            elif spllst_select[i].isalpha() and i==0 and spllst_select[i+1]=="^":
+                value_a=1
+                valuex = spllst_select[i]
+            elif spllst_select[i].isalpha() and not spllst_select[i-1].isnumeric() and spllst_select[i+1]=="^":
+                value_a=1
+                valuex = spllst_select[i]
+            if spllst_select[i].isalpha() and i>=1 and spllst_select[i-1].isnumeric() and spllst_select[i+1]!="^":
+                valuex = spllst_select[i]
+                if spllst_select[i-2]=="-" and spllst_select[i+1]!="^":
+                    value_b = float(spllst_select[i - 1]) *-1
+                else:
+                    value_b = float(spllst_select[i - 1])
+            elif spllst_select[i].isalpha() and i==0 and spllst_select[i+1]!="^":
+                value_b=1
+            elif spllst_select[i].isalpha() and not spllst_select[i-1].isnumeric() and spllst_select[i+1]!="^":
+                value_b=1
+            if spllst_select[i]=="=":
+                if spllst_select[i+1]=="-":
+                    value_z = float(spllst_select[i+2])*-1
+                else:
+                    value_z = float(spllst_select[i+1])
+            if spllst_select[i]=="+" and not spllst_select[i+2].isalpha() and not spllst_select[i+1].isalpha() :
+                dicadd.append(float(spllst_select[i+1]))
+            if spllst_select[i]=="-" and not spllst_select[i+1].isalpha() and spllst_select[i-1]!="=" and not spllst_select[i+2].isalpha() :
+                dicremove.append(float(spllst_select[i+1]))
+            if i == 0 and not spllst_select[i + 1].isalpha():
+                try:
+                    dicadd.append(float(spllst_select[i]))
+                except ValueError as e:
+                    if str(e)[:38:] == "invalid literal for int() with base 10":
+                        dicadd.append(float(spllst_select[i]))
+        value_k= sum(dicadd) - sum(dicremove)-value_z
+        deta = pow(value_b,2) - 4 * value_a * value_k
+        if deta<0:
+            return "此方程无解"
+        value_x1 = (-value_b + deta ** (1 / 2)) / (2 * value_a)
+        value_x2 = (-value_b - deta ** (1 / 2)) / (2 * value_a)
+        return valuex+"1="+str(value_x1)+"\t"+valuex+"2="+str(value_x2)
+
+    # 解一元三次方程 ax^3+bx^2+cx+d=z
+    if unknva==1 and power==3:
+        dicadd=[]
+        dicremove=[]
+        value_a=0
+        value_b=0
+        value_c=0
+        value_z=0
+        value_k=0
+        valuex=""
+        for i in range(len(spllst_select)):
+            # 获取3次系数
+            if spllst_select[i].isalpha() and i>=1 and spllst_select[i-1].isnumeric() and spllst_select[i+1]=="^" and spllst_select[i+2]=="3":
+                valuex = spllst_select[i]
+                if spllst_select[i-2]=="-" and spllst_select[i+1]=="^":
+                    value_a = float(spllst_select[i - 1]) *-1
+                else:
+                    value_a = float(spllst_select[i - 1])
+            elif spllst_select[i].isalpha() and i==0 and spllst_select[i+1]=="^" and spllst_select[i+2]=="3":
+                value_a=1
+                valuex = spllst_select[i]
+            elif spllst_select[i].isalpha() and not spllst_select[i-1].isnumeric() and spllst_select[i+1]=="^" and spllst_select[i+2]=="3":
+                value_a=1
+                valuex = spllst_select[i]
+            # 获取2次系数
+            if spllst_select[i].isalpha() and i>=1 and spllst_select[i-1].isnumeric() and spllst_select[i+1]=="^" and spllst_select[i+2]=="2":
+                valuex = spllst_select[i]
+                if spllst_select[i-2]=="-" and spllst_select[i+1]=="^":
+                    value_b = float(spllst_select[i - 1]) *-1
+                else:
+                    value_b = float(spllst_select[i - 1])
+            elif spllst_select[i].isalpha() and i==0 and spllst_select[i+1]=="^" and spllst_select[i+2]=="2":
+                value_b=1
+                valuex = spllst_select[i]
+            elif spllst_select[i].isalpha() and not spllst_select[i-1].isnumeric() and spllst_select[i+1]=="^" and spllst_select[i+2]=="2":
+                value_b=1
+                valuex = spllst_select[i]
+            # 获取1次系数
+            if spllst_select[i].isalpha() and i>=1 and spllst_select[i-1].isnumeric() and spllst_select[i+1]!="^":
+                valuex = spllst_select[i]
+                if spllst_select[i-2]=="-" and spllst_select[i+1]!="^":
+                    value_c = float(spllst_select[i - 1]) *-1
+                else:
+                    value_c = float(spllst_select[i - 1])
+            elif spllst_select[i].isalpha() and i==0 and spllst_select[i+1]!="^":
+                value_c=1
+            elif spllst_select[i].isalpha() and not spllst_select[i-1].isnumeric() and spllst_select[i+1]!="^":
+                value_c=1
+            if spllst_select[i]=="=":
+                if spllst_select[i+1]=="-":
+                    value_z = float(spllst_select[i+2])*-1
+                else:
+                    value_z = float(spllst_select[i+1])
+            if spllst_select[i]=="+" and not spllst_select[i+2].isalpha() and not spllst_select[i+1].isalpha():
+                dicadd.append(float(spllst_select[i+1]))
+            if spllst_select[i]=="-" and not spllst_select[i+1].isalpha() and spllst_select[i-1]!="=" and not spllst_select[i+2].isalpha():
+                dicremove.append(float(spllst_select[i+1]))
+            if i == 0 and not spllst_select[i + 1].isalpha():
+                try:
+                    dicadd.append(float(spllst_select[i]))
+                except ValueError as e:
+                    if str(e)[:38:] == "invalid literal for int() with base 10":
+                        dicadd.append(float(spllst_select[i]))
+        value_k= sum(dicadd) - sum(dicremove)-value_z
+        # ax^3+bx^2+cx+k=0 这里使用盛金公式
+        value_A=value_b**2-3*value_a*value_c
+        value_B=value_b*value_c-9*value_a*value_k
+        value_C=value_c**2-3*value_b*value_k
+        deta = pow(value_B,2) - 4 * value_A * value_C
+        if deta>0:
+            value_Y1 = value_A * value_b + 3 * value_a * (-value_B + pow(deta, 1 / 2)) / 2
+            value_Y2 = value_A * value_b + 3 * value_a * (-value_B - pow(deta, 1 / 2)) / 2
+            value_x1=(-value_b - (pow(value_Y1,1/3)+pow(value_Y2,1/3)))/(3*value_a)
+            value_x2_shi=(-value_b + (pow(value_Y1,1/3)+pow(value_Y2,1/3))/2)/(3*value_a)
+            value_x2_xu= (pow(3,1/3)*(pow(value_Y1,1/3)+pow(value_Y2,1/3))/2)/(3*value_a)
+            return valuex+"1="+str(value_x1)+" , "+valuex+"2="+str(value_x2_shi)+" + "\
+                   +str(value_x2_xu)+"i , "+valuex+"3="+str(value_x2_shi)+" - "+str(value_x2_xu)+"i"
+        if deta==0:
+            if value_A!=0:
+                value_K=value_B/value_A
+                value_x1=-value_b/value_a + value_K
+                value_x2=-value_K/2
+                return valuex + "1=" + str(value_x1) + " , " + valuex + "2=" +valuex+"3=" + str(value_x2)
+            else:
+                return "此方程无解"
+        if deta<0:
+            value_T=(2*value_A*value_b-3*value_a*value_B)/(2*pow(value_A,3/2))
+            if value_A>0 and -1<value_T<1:
+                import math
+                sita = math.acos(value_T)
+                value_x1=(-value_b-2*pow(value_A,1/2)*math.cos(sita/3))/(3*value_a)
+                value_x2=(-value_b+pow(value_A,1/2)*(math.cos(sita/3) + pow(3,1/2)*math.sin(sita/3)))/(3*value_a)
+                value_x3=(-value_b+pow(value_A,1/2)*(math.cos(sita/3) - pow(3,1/2)*math.sin(sita/3)))/(3*value_a)
+                return valuex+"1=" + str(value_x1)+" , "+ valuex + "2="+str(value_x2)+" , "+ valuex + "3="+str(value_x3)
+            else:
+                return "此方程无解"
+
+    # 以上两个其实也可以简化，调用extractco函数，但为了方便理解就没有调用
+
+    # 二分法解一元四次及以上的方程 ax^n+bx^(n-1)...=z
+    if unknva==1 and power>=4:
+        dicadd = []
+        dicremove = []
+        value_z = 0
+        value_x=[]
+        section_op=[]
+        section_ne=[]
+        section_x=[]
+        for i in range(len(spllst_select)):
+            if spllst_select[i] == "=":
+                if spllst_select[i + 1] == "-":
+                    value_z = float(spllst_select[i + 2]) * -1
+                else:
+                    value_z = float(spllst_select[i + 1])
+            if spllst_select[i] == "+" and not spllst_select[i + 2].isalpha() and not spllst_select[i + 1].isalpha():
+                dicadd.append(float(spllst_select[i + 1]))
+            if spllst_select[i] == "-" and not spllst_select[i + 1].isalpha() and spllst_select[i - 1] != "=" and not \
+            spllst_select[i + 2].isalpha():
+                dicremove.append(float(spllst_select[i + 1]))
+            if i == 0 and not spllst_select[i + 1].isalpha():
+                try:
+                    dicadd.append(float(spllst_select[i]))
+                except ValueError as e:
+                    if str(e)[:38:] == "invalid literal for int() with base 10":
+                        dicadd.append(float(spllst_select[i]))
+        value_k = sum(dicadd) - sum(dicremove) - value_z
+        coefficient=[0]*power
+        coefficient_finally=extractco(spllst_select,coefficient,power,power)
+        if joinxandco(coefficient_finally,value_k,power,0)==0:
+            value_x.append(0)
+        else:
+            for i in range(1,max_final_settion):
+                section_op.append(joinxandco(coefficient_finally,value_k,power,i))
+                section_ne.append(joinxandco(coefficient_finally,value_k,power,-i))
+        # 取相反符号区间
+        if section_ne[0]*section_op[0]<0 and joinxandco(coefficient_finally,value_k,power,0)!=0:
+            section_x.append([-1,1])
+        for i in range(len(section_op)-1):
+            if section_op[i]==0:
+                value_x.append(i+1)
+            if section_ne[i]==0:
+                value_x.append(-i-1)
+            if section_op[i]*section_op[i+1]<0:
+                section_x.append([i+1,i+2])
+            if section_ne[i]*section_ne[i+1]<0:
+                section_x.append([-i-2,-i-1])
+        for i in range(len(section_x)):
+            section=dichotomy(section_x[i][0],section_x[i][1],coefficient_finally,value_k, power, minerror)
+            value_x.append(section)
+        return value_x
+
+
+
+print("一元一次方程 result-->",solfuc(["4.5-2x=0.5"]))
+print("二元一次方程 result-->",solfuc(["2x+y+10=-13","x+2y+7=-12"]))
+print("一元二次方程 result-->",solfuc(["x^2-5x+6=0"]))
+print("一元三次方程 result-->",solfuc(["3x^3-2x^2-5x-1=0"]))
+print("=="*40)
+print("二分法获取区间 result->",solfuc(["2x^5+3x^4-2x^3-5x-1=1.5"],minerror=0))
+
+
+'''
+对于一元一次方程：
+    等号后不能有运算符
+    不能带括号
+    必须满足 ax+c=z 的模式（顺序可以变换）
+    可以取规则内的任意字母
+    x前系数不能带小数点
+    常数可以取小数点
+    
+对于二元一次方程：
+    等号后不能有运算符
+    不能带括号
+    必须满足 ax+by+c=z 的模式（顺序可以变换）
+    只能指定x和y
+对于一元二次方程：
+    等号后不能有运算符
+    不能带括号
+    必须满足 ax^2+bx+c=z 的模式（顺序可以变换）
+    可以取规则内的任意字母
+对于一元三次方程：
+    等号后不能有运算符
+    不能带括号
+    必须满足 ax^3+bx^2+cx+d=z 的模式（顺序可以变换）
+    可以取规则内的任意字母
+对于一元多次方程：
+    等号后不能有运算符
+    不能带括号
+    必须满足 ax^3+bx^2+cx+d=z 的模式（顺序可以变换）
+    可以取规则内的任意字母
+'''
+
+# x前没法读取小数系数
