@@ -1,0 +1,29 @@
+import smtplib
+from threading import Thread
+from email.mime.text import MIMEText
+# 由 CandySweet——kaibbj
+
+class EmailSender:
+    def __init__(self,user):
+        self.user=user
+        self.sender = "xxx.com"
+        self.pwd="smtp"
+
+        self.smtp = smtplib.SMTP_SSL("smtp.163.com",465)
+    def send_register(self,recv,yzm): #发送注册验证码用,recv为收件邮箱,yzm为验证码
+        message = MIMEText("尊敬的"+self.user+"：\n您的校验码为: "+yzm+"\n操作完成后，请用您的账号而非邮箱进行登录\n©CandySweet",'plain','utf-8')
+        message['Subject'] = '注册校验码'
+        message['To'] = recv
+        message['From'] = self.sender
+        self.smtp.login(self.sender,self.pwd)
+        self.smtp.sendmail(self.sender,[recv],message.as_string())
+        self.smtp.close()
+
+    def send_find_pwd(self,recv,yzm):#发送找回密码验证码用,recv为收件邮箱,yzm为验证码
+        message = MIMEText(yzm,'plain','utf-8')
+        message['Subject'] = '找回密码验证码'
+        message['To'] = recv
+        message['From'] = self.sender
+        self.smtp.login(self.sender,self.pwd)
+        self.smtp.sendmail(self.sender,[recv],message.as_string())
+        self.smtp.close()
