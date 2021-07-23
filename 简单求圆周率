@@ -1,0 +1,14 @@
+def pi(n):
+    total_in_circle=0
+    import random
+    from tqdm import trange
+    for i in trange(n):
+        a,b=random.random(),random.random()
+        if a**2+b**2 <= 1:
+            total_in_circle+=1
+    return total_in_circle/n *4
+
+
+
+
+# print(pi(1000000000))
