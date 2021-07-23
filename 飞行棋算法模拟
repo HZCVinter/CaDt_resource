@@ -1,0 +1,456 @@
+# 以0为起点，length为终点
+# 这里不算区间连接跳跃的步数，如 [2,99]相连， 1 --> 2 --- 99 -->100 算2步
+
+
+# 下面这个函数为输出文字
+def flystr(stepgo,i,skip):
+    if i==len(stepgo)-1:
+        return " --> " + str(stepgo[i]) + "\n步数：" + str(len(stepgo)-skip)
+    else:
+        return " --> " + str(stepgo[i]) + str(flystr(stepgo,i+1,skip))
+
+
+# 选择函数
+def list_choose(lst,a1=1,b=False,sec=False):
+    comlis,result=[],[]
+    import itertools
+    if b!=False:
+        a2=b
+    else:a2=len(lst)+1
+    for i in range(a1,a2):
+        comlis.append(list(itertools.combinations(lst,i)))
+    for i in comlis:
+        for ii in i:
+            if sec:
+                if len(ii) == 1:
+                    result.append(ii[0])
+                else:
+                    result.append(list(ii))
+            else:
+                result.append(list(ii))
+    return result
+
+
+# 计算区间类型
+def type_sec(connect):
+    section_type=[]
+    if len(connect)>1:
+        for i in range(len(connect)):
+            if i == 0:
+                if connect[i][1] > connect[i + 1][0]:
+                    section_type.append(2)
+                else:
+                    section_type.append(0)
+            if i == len(connect) - 1:
+                if connect[i][0] < connect[i - 1][1]:
+                    section_type.append(1)
+                else:
+                    section_type.append(0)
+            if 0 < i < len(connect) - 1:
+                if connect[i][0] < connect[i - 1][1] and connect[i][1] > connect[i + 1][0]:
+                    section_type.append(3)
+                elif connect[i][1] > connect[i + 1][0] and connect[i][0] > connect[i - 1][1]:
+                    section_type.append(2)
+                elif connect[i][0] < connect[i - 1][1] and connect[i][1] < connect[i + 1][0]:
+                    section_type.append(1)
+                else:
+                    section_type.append(0)
+    else:
+        section_type=[0]
+    return section_type
+
+
+
+# 下面这个函数为筛选步长最长的跳跃区间
+def flyselect(length,connect,step,now=0,step_skip=0,length_step=False):
+    select,others,select_finnally={},[],[]
+    select_max=0
+    section_type=[]
+
+    # 选择目前能跳跃的区间中，最长的区间
+    for i in range(len(connect)):
+        if connect[i][0] - now <= 6:
+            select[connect[i][1] - connect[i][0]] = connect[i][0]
+            select_max = max(list(select.keys()))
+        else:
+
+            others.append(connect[i])
+
+    # 区间合并及返回
+    try:
+        select_finnally.append([select[select_max], select_max + select[select_max]])
+    except:
+        pass
+    select_finnally.extend(others)
+    connect=select_finnally
+    select_finnally=[]
+
+    if len(connect)>1:
+
+        for i in range(len(connect)):
+            if now < connect[i][0]:
+                select_finnally.append(connect[i])
+
+        connect=select_finnally
+        select_finnally=[]
+
+
+        # 把区间分类：
+        # 区间与前后区间均不冲突的为0
+        # 只有区间起点与前区间冲突的为1
+        # 只有区间终点与后区间冲突的为2
+        # 区间起点与前区间冲突，区间终点与后区间冲突的为3
+        for i in range(len(connect)):
+
+            if i==0:
+                if connect[i][1] > connect[i+1][0]:
+                    section_type.append(2)
+                else:
+                    section_type.append(0)
+            if i==len(connect)-1:
+                if connect[i][0] < connect[i-1][1]:
+                    section_type.append(1)
+                else:
+                    section_type.append(0)
+            if 0 < i < len(connect)-1:
+                if connect[i][0] < connect[i-1][1] and connect[i][1] > connect[i+1][0]:
+                    section_type.append(3)
+                elif connect[i][1] > connect[i+1][0] and connect[i][0] > connect[i-1][1]:
+                    section_type.append(2)
+                elif connect[i][0] < connect[i-1][1] and connect[i][1] < connect[i+1][0]:
+                    section_type.append(1)
+                else:
+                    section_type.append(0)
+
+        # 对不同类型进行不同处理
+        # 另外：
+        # 区间价值=(区间终点-区间起点)/6                 section_value
+        # 消费价值=(区间起点-now)/6  并向上取整           value_cost
+        # 剩余价值=区间价值-消费价值                      remain_value
+        section_value=[]
+        value_cost=[]
+        remain_value=[]
+        know=now
+        import math
+
+
+        # 0类型
+        if section_type[0]==0 :
+            select_finnally=connect
+        # 2 1 类型
+        elif section_type[0]==2 and section_type[1]==1:
+            # if i>0 and section_type[i-1]==0 and connect[i-1][1]>know:
+            #    know=connect[i-1][1]
+            section_deal=[connect[0],connect[1]]
+            section_value=[(connect[0][1]-connect[0][0])/6,(connect[1][1]-connect[1][0])/6]
+            value_cost=[math.ceil((connect[0][0]-know)/6),math.ceil((connect[1][0]-know)/6)]
+            remain_value=[section_value[0]-value_cost[0],section_value[1]-value_cost[1]]
+            if remain_value[1] > remain_value[0]:
+                for ii in connect:
+                    if ii!=section_deal[0]:
+                        select_finnally.append(ii)
+            else:
+                for ii in connect:
+                    if ii!=section_deal[1]:
+                        select_finnally.append(ii)
+            return flyselect(length,select_finnally,step,now,step_skip)
+
+        # 2 3 1 类型
+        # [3,21] , [20,149] , [54,150]  可选 一三或 只 选二
+        # [3,25] , [21,70] , [24,194]   只能选一个
+        elif section_type[0]==2 and section_type[1]==3 and section_type[2]==1:
+
+            section_deal = [connect[0], connect[1], connect[2]]
+            section_value = [(connect[0][1] - connect[0][0]) / 6, (connect[1][1] - connect[1][0]) / 6,
+                             (connect[2][1] - connect[2][0]) / 6]
+            '''if i>0:
+                for aa in range(i):
+                    if section_type[aa]==0:
+                        know=connect[aa][1]'''
+            # 区分大类型下的小类型
+            if section_deal[2][0] > section_deal[0][1]:
+                value_cost = [math.ceil((connect[0][0] - know) / 6), math.ceil((connect[1][0] - know) / 6),
+                              math.ceil((connect[2][0] - connect[0][1]) / 6)]
+                remain_value = [section_value[0] - value_cost[0], section_value[1] - value_cost[1],
+                                section_value[2] - value_cost[2]]
+                if remain_value[0] + remain_value[2] > remain_value[1]:
+                    for ii in connect:
+                        if ii != section_deal[1]:
+                            select_finnally.append(ii)
+                else:
+                    for ii in connect:
+                        if ii != section_deal[0] and ii != section_deal[2]:
+                            select_finnally.append(ii)
+                return flyselect(length, select_finnally, step, now, step_skip)
+            if section_deal[2][0] < section_deal[0][1]:
+                value_cost = [math.ceil((connect[0][0] - know) / 6), math.ceil((connect[1][0] - know) / 6),
+                              math.ceil((connect[2][0] - know) / 6)]
+                remain_value = [section_value[0] - value_cost[0], section_value[1] - value_cost[1],
+                                section_value[2] - value_cost[2]]
+                value_max = max(remain_value)
+                for x in range(len(remain_value)):
+                     if remain_value[x] == value_max:
+                        select_finnally.append(section_deal[x])
+                return flyselect(length, select_finnally, step, now, step_skip)
+        # 23..31型
+        elif section_type[0]==2 and section_type[1]==3 and section_type[2]==3:
+            # 把 23..31添加进section_deal
+            section_deal = [connect[0], connect[1], connect[2]]
+            if len(section_type) >= 4:
+                if section_type[3] == 1:
+                    section_deal = [connect[0], connect[1], connect[2], connect[3]]
+                else:
+                    section_deal = [connect[0], connect[1], connect[2]]
+                    for i in range(3,len(section_type)):
+                        if section_type[i] == 3:
+                            section_deal.append(connect[i])
+                        elif section_type[i] == 1:
+                            section_deal.append(connect[i])
+                            break
+            cho_lst=list_choose(section_deal)
+            section_correct,section_length,total_type=[],[],[]
+            section_correct_true=0
+            for ii in cho_lst:
+                total_type.append(type_sec(ii))
+                if sum(type_sec(ii))==0:
+                    section_correct.append(ii)
+            import copy
+            section_correct_copy=copy.deepcopy(section_correct)
+            for iii in range(len(section_correct)):
+                length_a=flygo(length,section_correct[iii],step=[],now=now,step_skip=step_skip,step_length=True)
+                section_length.append(length_a)
+            for iii in range(len(section_length)):
+                if section_length[iii]==min(section_length):
+                    section_correct_true=section_correct_copy[iii]
+            return flyselect(length,section_correct_true, step, now, step_skip)
+    elif len(connect)==1:
+        select_finnally=connect
+    select_finnally_true=[]
+    if len(select_finnally)>1:
+        for i in select_finnally:
+            if i[0]>now:
+                select_finnally_true.append(i)
+    elif len(select_finnally)==1:
+        select_finnally_true=select_finnally
+
+
+
+
+    return flygo(length, select_finnally_true, step, now, step_skip, length_step)
+
+
+
+
+
+# 下面这个函数为飞行函数
+def flygo(length,connect,step,now,step_skip=0,step_length=False):
+    for i in range(len(connect)):
+        # 筛选行走方式
+        # 此为筛选跳跃范围内有无可跳跃区间，且区间长度合理
+        if 0 < connect[i][0] - now <= 6 and length - now > 6 and (connect[i][1] > now + 6):
+            # 筛选区间终点是否跳跃到了终点
+            if connect[i][1]<length:
+                step.extend([connect[i][0],connect[i][1]])
+                now = connect[i][1]
+                step_skip += 1
+                if i!=len(connect)-1:
+                    connect.pop(i)
+                return flyselect(length, connect, step, now ,step_skip, step_length)
+            else:
+                step.extend([connect[i][0],connect[i][1]])
+                step_skip += 1
+                if not step_length:
+                    return flystr(step, 0, step_skip)
+                else:
+                    return len(step)-step_skip
+
+
+        # 此为若目前位置到终点小于等于6格则直接跳跃到终点
+        elif length - now <=6:
+            step.append(length)
+            if not step_length:
+                return flystr(step, 0, step_skip)
+            else:
+                return len(step) - step_skip
+
+        # 此为直接跳跃
+        elif ((connect[i][0] - now > 6) or (connect[i][0] - now < 0 and len(connect)==1) or (connect[i][1] <= now + 6)) and length - now > 6:
+            step.append(now+6)
+            now += 6
+            return flyselect(length,connect,step,now,step_skip, step_length)
+        # 此为删除不合理区间
+        elif ((connect[i][0] - now < 0) or (connect[i][1] < now + 6)) and i != len(connect) - 1:
+            connect.pop(i)
+            return flyselect(length, connect, step, now, step_skip, step_length)
+
+
+# 下面这个函数是主输入函数和筛选排列
+def fly(length,connect):
+    connect_true,connect_select,connect_select_true,connect_select_dic=[],[],[],{}
+    # 筛选是否连接区间在长度内以及对区间纠正
+    for i in range(len(connect)):
+        if connect[i][0] > connect[i][1]:
+            connect[i][0],connect[i][1]=connect[i][1],connect[i][0]
+        if connect[i][0]==connect[i][1]:
+            return "同一格不能相连"
+        if length < connect[i][0]:
+            return "连接区间超出长度"
+        if length >= connect[i][1]:
+            connect_true.append(connect[i])
+
+    # 将正确区间添加进 connect_select_true 中
+    for i in range(len(connect_true)):
+        connect_select.append(connect_true[i][0])
+        connect_select_dic[connect_true[i][0]]=connect_true[i]
+        connect_select.sort()
+    for i in range(len(connect_select)):
+        connect_select_true.append(connect_select_dic[connect_select[i]])
+
+    # 输出
+    if length<=6:
+        return "0 --> " + str(length) + "\n步数：1"
+    else:
+        # 跳跃至区间筛选
+        return "0" + str(flyselect(length,connect_select_true,[],0))
+
+
+
+
+if __name__ == '__main__':
+
+    # 这个可以看出与无选择的区别
+    print("有无选择的区别：",fly(100, [[2, 5], [4, 90]]))
+    # 有选择的：0 --> 4 --> 90 --> 96 --> 100  步数：3
+    # 无选择的：0 --> 2 --> 5 --> 11 --> 17 --> 23 --> 29 --> 35 --> 41 --> 47
+    # --> 53 --> 59 --> 65 --> 71 --> 77 --> 83 --> 89 --> 95 --> 100         步数：17
+
+    # 选择2.0与1.0的区别：
+    print("选择1.0与2.0的区别一：",fly(200, [[3, 21], [20, 149], [54, 150]]))
+    # 选择2.0： 0 --> 6 --> 12 --> 18 --> 20 --> 149 --> 155 --> 161 --> 167 --> 173 --> 179 --> 185 --> 191 --> 197 --> 200   步数：13
+    # 选择1.0： 0 --> 3 --> 21 --> 27 --> 33 --> 39 --> 45 --> 51 --> 54 --> 150 --> 156 --> 162 --> 168
+    #         --> 174 --> 180 --> 186 --> 192 --> 198 --> 200    步数：16
+    print("选择1.0与2.0的区别二：",fly(100, [[3, 21], [20, 59]]))
+    # 选择2.0：0 --> 6 --> 12 --> 18 --> 20 --> 59 --> 65 --> 71 --> 77 --> 83 --> 89 --> 95 --> 100     步数：11
+    # 选择1.0：0 --> 3 --> 21 --> 27 --> 33 --> 39 --> 45 --> 51 --> 57 --> 63 --> 69 --> 75 --> 81 --> 87 --> 93 --> 99 --> 100  步数：15
+
+
+    print("=="*40)
+    print(fly(90, [[2, 10], [20, 58], [3, 15], [4, 13], [16, 19], [60, 71], [80, 99], [80, 88]]))
+
+    # 0 --> 3 --> 15 --> 20 --> 58 --> 60 --> 71 --> 77 --> 80 --> 88 --> 90 步数：6
+
+    print("===========")
+    print(fly(100, [[10, 90]]))
+
+    print(fly(5, [[1, 3]]))
+    print(fly(100, [[15, 100]]))
+    print(fly(1000, [[2, 8], [1, 5], [12, 18], [910, 999], [112, 600], [9, 11], [605, 908], [111, 50]]))
+
+
+
+
+    print(fly(100,[[2,20],[52,66],[53,68]]))
+
+
+    print("=="*40)
+    print(fly(200, [[2, 5], [4, 90], [92, 106], [100, 190]]))
+
+    print(fly(104,[[2,20],[52,66],[53,68]]))
+
+
+    print(fly(100,[[7,8],[11,12],[13,100]]))
+
+    print(fly(200,[[3, 21], [20, 149],[54, 150]]))
+
+    # 问题 23..31类型的
+
+    # 231问题
+    print(fly(200,[[3,25],[21,70],[24,194]]))
+
+    print(fly(1000,[[3,100],[102,250],[200,300],[270,500],[510,530],[555,600],[590,900],[700,800]]))
+
+
+    # 问题 23..31类型的
+    print(fly(500, [[2,21],[20, 149], [54, 150],[140,290],[280,490]]))
+
+
+
+    # 大致问题解决了
+    # 剩下就是可以简化指令
+    # 指令简化会导致代码运算量加大
+
+
+
+
+
+'''
+
+把区间分类：
+区间与前后区间均不冲突的为0
+只有区间起点与前区间冲突的为1
+只有区间终点与后区间冲突的为2
+区间起点与前区间冲突，区间终点与后区间冲突的为3
+
+区间价值=(区间终点-区间起点)/6
+消费价值=(区间起点-now)/6   并且向上取整
+剩余价值=区间价值-消费价值
+
+
+
+0 2 1 0类型比较
+（now为棋盘起点0或者上一个类型为0的区间的终点）
+
+
+[3，21]
+区间价值：3
+消费价值：0.5
+剩余价值：2.5
+
+[20，59]
+区间价值：6.5
+消费价值：3.33
+剩余价值：3.17
+
+直接比较剩余大小得答案
+选择 价值最大值
+
+================
+
+2 3 1类型比较
+（now为棋盘起点0或者 类型2的终点）
+
+[3，21]   
+区间价值：3
+消费价值：0.5
+剩余价值：2.5
+
+[20，59]
+区间价值：6.5
+消费价值：3.33
+剩余价值：3.17
+
+[54，150]
+区间价值：16
+消费价值：5.5
+剩余价值：10.5
+
+if 价值3+价值1 > 价值2：
+    选价值3+1
+else：
+    选择价值2
+
+================
+23...31类型
+
+直接排列组合全部区间类型
+然后挨个算步长
+取最小值
+
+
+
+'''
+
+
+
+
+
