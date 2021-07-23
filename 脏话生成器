@@ -1,0 +1,62 @@
+def sbxd(lst2):
+    lst3=[]
+    for i in lst2:
+        if i>1:
+            lst3.append(i)
+    if lst3==[]:
+        import random
+        lst2 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        for i in range(len(lst2)):
+            position_count = random.randint(0, 15)
+            lst2[position_count] += 1
+        return sbxd(lst2)
+    return lst3
+
+def zuan_creat(creat_count=1):
+    # 骂人词汇随便加
+    zuan_lst = ['caonima', "cnm", "nmsl", "dnmd", "wdnmd", "rnm", "renzha", "bitch", "fuckyou", "smalldick", "daonima",
+           "bailei",
+           "gotohell", "laji", "rubbish", "jiuzhe", "ldiot", "shit", "crazy", "freak", "Putain", "Merde", "Enculled",
+           "Batard",
+           "godieplease", "Fickdich", "Arschloch", "nimabi", "nmb", "caonm", "feiwu", "baga", "goushi", "biantai",
+           "xiaohunhun",
+           "daozi", "bofu", "dork", "nerd", "dammit", "damn", "dirty", "lier", "phycho", "dense", "stupid", "foolish",
+           "sukabulie",
+           "shabi", "bigshabi", "gouniangyangde", "zazhong", "qunimade", "prick", "bellend", "ass", "arse", "cunt",
+           "balls", "nm",
+           "nizhenkexiao", "niquanjiasile", "dnmdcnmcnmcnmcnm", "cnmnmslnmslnmsl","biaozi","gun"]
+    acounts=[]
+    passwords=[]
+    import random
+    # 可以使用正态分布修改概率，这里暂不使用
+    # import math
+    # fx=pow(math.e,-(x**2)/2)/(o*pow(2*math.pi,1/2))
+    cot=0
+    while cot<creat_count:
+        password_count=random.randint(8,16)
+        lst=[1]*password_count
+        lst2=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+        for i in range(len(lst)):
+            position_count=random.randint(0,15)
+            lst2[position_count]+=1
+        lst3=sbxd(lst2)
+        for i in range(sum(lst2)-sum(lst3)):
+            lst3[random.randint(0,len(lst3)-1)]+=1
+        str_lst = []
+        for i in range(len((lst3))):
+            lst4=[]
+            for ii in zuan_lst:
+                if len(ii)==lst3[i]:
+                    lst4.append(ii)
+            str_lst.append(random.choice(lst4))
+        password_only="".join(str_lst)
+        acount_only=random.randint(100000000,9999999999)
+        acounts.append(acount_only)
+        passwords.append(password_only)
+        cot+=1
+    file=open("生成文件.txt","w+")
+    for i in range(len(acounts)):
+        file.write(str(acounts[i])+"\t"+str(passwords[i])+"\n")
+
+
+zuan_creat(20000)
