@@ -1,0 +1,51 @@
+class Ver_code():
+    def __init__(self,code):
+        self.code=code
+
+    def default(self):
+        import random
+        import string
+        import os
+        from PIL import Image, ImageFont, ImageDraw, ImageFilter  # 外部库
+        from io import BytesIO
+
+        def rndColor():
+            return (random.randint(32, 127), random.randint(32, 127), random.randint(32, 127))
+
+        '''def gene_text():
+            # 生成4位验证码
+            return ''.join(random.sample(string.ascii_letters + string.digits, 4))'''
+
+        def draw_lines(draw, num, width, height):
+            for num in range(num):
+                x1 = random.randint(0, width / 2)
+                y1 = random.randint(0, height / 2)
+                x2 = random.randint(0, width)
+                y2 = random.randint(height / 2, height)
+                draw.line(((x1, y1), (x2, y2)), fill='black', width=1)
+
+        def get_verify_code():
+            '''生成验证码图形'''
+            code = self.code
+            width, height = 120, 50
+            im = Image.new('RGB', (width, height), 'white')
+            #dirname = os.path.dirname(os.path.realpath(__file__))
+            #path = dirname + 'font/arial.ttf'  # 字体文件路径
+            # 字体
+            font = ImageFont.truetype(font='font/arial.ttf', size=40)
+            draw = ImageDraw.Draw(im)
+            for item in range(4):
+                draw.text((5 + random.randint(-3, 3) + 23 * item, 5 + random.randint(-3, 3)),
+                          text=code[item], fill=rndColor(), font=font)
+            draw_lines(draw, 2, width, height)
+            im = im.filter(ImageFilter.GaussianBlur(radius=1.5))
+            return im, code
+
+        ###usage###
+        im, code = get_verify_code()
+        buf = BytesIO()
+        im.save(buf, 'jpeg')
+        buf_str = buf.getvalue()  # 图片二进制数据
+
+        with open('C:\\SLS\\photo_ache\\VER\\ver_code_cache.png', 'wb') as f:
+            f.write(buf_str)  # 写入文件
