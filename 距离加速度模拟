@@ -1,0 +1,74 @@
+# 这个函数是用来得出结论的
+# distance即距离， list_count_min/max 即区间碎片化程度， remove_zero即是否移除区间为0的值
+def random_com(distance, list_count_min=4, list_count_max=8, remove_zero=True):
+    import random
+    lst = []
+    for i in range(distance):
+        lst.append(1)
+    list_range = [list_count_min, list_count_max]
+    list_count = random.randint(*list_range)
+    total_list = []
+    for i in range(list_count):
+        total_list.append([0])
+    for i in range(len(lst)):
+        add_list = random.randint(0, list_count - 1)
+        total_list[add_list].append(1)
+    result_list = []
+    for i in range(list_count):
+        if remove_zero:
+            if sum(total_list[i]) != 0:
+                result_list.append(sum(total_list[i]))
+        else:
+            result_list.append(sum(total_list[i]))
+
+    return result_list
+
+# distance即距离， time_limit即时间限制，将模拟至这段时间内，debug即开启debug
+# 这个函数是用来输入和判断上函数返回值是否是我们需要的
+# 距离越大，时间使用量越偏向于最小值
+def acceleration_simulate(distance, time_limit=[1.0, 2.0], debug=False):
+    import random
+    import math
+    if type(distance) != int:
+        return "输入距离只能为int类型"
+    split_fin = random_com(distance)
+    time_use = 0
+    v0 = 0
+    a_range = [math.ceil(2 * distance / pow(time_limit[1], 2)), math.floor(2 * distance / pow(time_limit[0], 2))]
+    a_list = []
+    t_list = []
+    v0_list = []
+    v_change_list = []
+    for i in range(len(split_fin)):
+        ai = random.randint(*a_range)
+        a_list.append(ai)
+        xi = split_fin[i]
+        ti = (-2 * v0 + (4 * v0 ** 2 + 8 * ai * xi) ** 0.5) / (2 * ai)
+        t_list.append(ti)
+        v0 += ai * ti
+        v0_list.append(v0)
+        v_change_list.append(ai * ti)
+        time_use += ti
+
+    if debug:
+        print("distance:", distance)
+        print("split_list:", split_fin)
+        print("a_range", a_range)
+        print("a_list", a_list)
+        print("t_list", t_list)
+        print("v0_list", v0_list)
+        print("v_change_list", v_change_list)
+        print("time_use", time_use)
+
+    if time_limit[0] < time_use < time_limit[1]:
+        return [split_fin, t_list]
+    else:
+        return acceleration_simulate(distance, time_limit, debug)
+
+
+# eg: 输入一个距离和限制时间，返回一个距离列表，总和为距离总长
+# debug中有其他的返回值
+try:
+    print("最终结果：", acceleration_simulate(1000, debug=True))
+except:
+    print('没有合适的结果')
