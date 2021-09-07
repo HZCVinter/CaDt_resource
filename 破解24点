@@ -1,0 +1,136 @@
+print()
+'''
+给定四个整数，范围为1~13， 容易使用 + - * / ()构造出一个表达式，使得最终结果为24
+eg: (9-8)x8x3=24
+
+'''
+
+'''
+使用 abcd
+a b c d分别代表4个整数，且a, b, c, d ∈ [1, 13]
+
+1.无括号加减乘除运算：
+    a ∅ b ∅ c ∅ d
+    ∅为 + - * /
+    
+    符号共有16种组合方式
+    此处 abcd 顺序唯一
+    
+2.带有一个括号且括号内只有两个数：
+    (a ∅ b) ∅ c ∅ d
+    为了确保算法唯一性
+    第一个∅只能为 + 或 -
+    第二个∅只能为 * 或 /
+    第三个∅任意
+    
+    此处abcd顺序不唯一
+
+3.带有两个括号且每个括号内有两个数：
+    (a ∅ b) ∅ (c ∅ d)
+    为了确保算法的唯一性
+    第一个∅只能为 + 或 -
+    第二个∅只能为 * 或 /
+    第三个∅只能为 + 或 -
+    
+    此处abcd顺序不唯一
+    
+4.带有一个括号且括号内有三个数：
+    (a ∅ b ∅ c) ∅ d
+    为了确保算法的唯一性
+    前两个∅中至少有一个 + 或 -
+    第三个∅只能为 * 或 /
+    但因为我们abcd的顺序可以变换
+    因此我们可以规定
+    ①前两个∅都为 + 或 -
+    ②第一个∅为 * 或 / ， 第二个∅为 + 或 -
+    
+
+
+'''
+
+
+def combinations(list_re):
+    import itertools
+    a = list_re[0]
+    b = list_re[1]
+    c = list_re[2]
+    list_a = list(itertools.product(a, b, c))
+    return list_a
+
+
+class twenty_four:
+    def __init__(self, a, b, c, d):
+        self.a = a
+        self.b = b
+        self.c = c
+        self.d = d
+        self.init_result = None
+
+    def simple_cal(self):
+        import itertools
+        result = []
+        all_com_list = combinations(list(itertools.repeat(["+", "-", "*", "/"], 3)))
+        for i in range(len(all_com_list)):
+            sql = f"{self.a} %s {self.b} %s {self.c} %s {self.d}" % (
+                all_com_list[i][0], all_com_list[i][1], all_com_list[i][2])
+            exec(f"self.init_result = {sql}")
+            if self.init_result == 24:
+                result.append(sql)
+        return result
+
+    def single_bracket_with_two_num(self):
+        import itertools
+        result = set()
+        all_symbol_list = combinations([["+", "-"], ["*", "/"], ["+", "-", "*", "/"]])
+        all_num_list = list(itertools.permutations([str(self.a), str(self.b), str(self.c), str(self.d)], 4))
+        for i in range(len(all_symbol_list)):
+            for ii in range(len(all_num_list)):
+                sql = f"({all_num_list[ii][0]} %s {all_num_list[ii][1]}) %s {all_num_list[ii][2]} %s {all_num_list[ii][3]}" % \
+                      (all_symbol_list[i][0], all_symbol_list[i][1], all_symbol_list[i][2])
+                exec(f"self.init_result = {sql}")
+                if self.init_result == 24:
+                    result.add(sql)
+        return list(result)
+
+    def two_bracket_with_two_num(self):
+        import itertools
+        result = set()
+        all_symbol_list = combinations([["+", "-"], ["*", "/"], ["+", "-"]])
+        all_num_list = list(itertools.permutations([str(self.a), str(self.b), str(self.c), str(self.d)], 4))
+        for i in range(len(all_symbol_list)):
+            for ii in range(len(all_num_list)):
+                sql = f"({all_num_list[ii][0]} %s {all_num_list[ii][1]}) %s ({all_num_list[ii][2]} %s {all_num_list[ii][3]})" % \
+                      (all_symbol_list[i][0], all_symbol_list[i][1], all_symbol_list[i][2])
+                try:
+                    exec(f"self.init_result = {sql}")
+                except ZeroDivisionError:
+                    pass
+                if self.init_result == 24:
+                    result.add(sql)
+        return list(result)
+
+    def single_bracket_with_three_num(self):
+        import itertools
+        result = set()
+        all_symbol_list = combinations([["+", "-"], ["+", "-"], ["*", "/"]]) + combinations(
+            [["*", "/"], ["+", "-"], ["*", "/"]])
+        all_num_list = list(itertools.permutations([str(self.a), str(self.b), str(self.c), str(self.d)], 4))
+        for i in range(len(all_symbol_list)):
+            for ii in range(len(all_num_list)):
+                sql = f"({all_num_list[ii][0]} %s {all_num_list[ii][1]} %s {all_num_list[ii][2]}) %s {all_num_list[ii][3]}" % \
+                      (all_symbol_list[i][0], all_symbol_list[i][1], all_symbol_list[i][2])
+                try:
+                    exec(f"self.init_result = {sql}")
+                except ZeroDivisionError:
+                    pass
+                if self.init_result == 24:
+                    result.add(sql)
+        return list(result)
+
+    def solve(self):
+        result = self.simple_cal() + self.single_bracket_with_two_num() \
+                 + self.two_bracket_with_two_num() + self.single_bracket_with_three_num()
+        return result
+
+
+print(twenty_four(1, 2, 6, 4).solve())
