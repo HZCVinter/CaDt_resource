@@ -1,0 +1,118 @@
+class Grab_killer:
+    def __init__(self, says, true_count=3):
+        self.tf_arr = []
+        self.tf_total = []
+        self.says = says
+        self.count = 4
+        self.deal_list = []
+        self.deal_says_total = []
+        self.really_says = []
+        self.true_count = true_count
+
+    def tf_comf(self):
+        if sum(self.tf_arr) > self.true_count:
+            return True
+        return False
+
+    def tf_perm(self, k):
+        if k == self.count:
+            if sum(self.tf_arr) == self.true_count:
+                self.tf_total.append(self.tf_arr[:])
+        else:
+            for i in [0, 1]:
+                self.tf_arr.append(i)
+                if not self.tf_comf():
+                    self.tf_perm(k+1)
+                self.tf_arr.pop()
+
+    def says_deal(self):
+        for i in self.says:
+            self.deal_list.append(i.split(" "))
+
+    # 语句正反转换
+    def says_transform(self, says):
+        trans_dict = {"is": "not", "not": "is", "True": "False", "False": "True"}
+        says[0] = trans_dict[says[0]]
+        return says
+
+    # 检测是否有True或False存在，存在即转换
+    def detect_deal_with_tf(self, deal_list_tf):
+        killer_dict = {"A": 0, "B": 1, "C": 2, "D": 3}
+        for i in range(len(deal_list_tf)):
+            if deal_list_tf[i][0] in ["True", "False"]:
+                need_deal_es = deal_list_tf[killer_dict[deal_list_tf[i][1]]]
+                if deal_list_tf[i][0] == "True":
+                    deal_list_tf[i] = need_deal_es
+                else:
+                    deal_list_tf[i] = self.says_transform(need_deal_es[:])[:]
+        for i in deal_list_tf:
+            if i[0] in ["True", "False"]:
+                return self.detect_deal_with_tf(deal_list_tf[:])
+        return deal_list_tf
+
+    # 以对错处理话语
+    def says_deal_with_tf(self, tf):
+        deal_list_tf = []
+        for i in range(len(tf)):
+            if tf[i]:
+                deal_list_tf.append(self.deal_list[i][:])
+            else:
+                deal_list_tf.append(self.says_transform(self.deal_list[i][:])[:])
+        return deal_list_tf
+
+    # 矛盾检测
+    def comflict_detect(self, says_deal):
+        for i in ["A", "B", "C", "D"]:
+            tem = []
+            for j in says_deal:
+                if j[1] == i:
+                    tem.append(j)
+            if len(tem) >= 2:
+                tem2 = [{"is": 1, "not": 0}[j[0]] for j in tem]
+                if 0 < sum(tem2) < len(tem2):
+                    return False
+        return True
+
+    def gene_killer(self, really):
+        killer_dict = {"A": 0, "B": 0, "C": 0, "D": 0}
+        for i in really:
+            if i[0] == "is":
+                killer_dict[i[1]] = 1
+        if sum(killer_dict.values()) != 1:
+            return False
+        else:
+            for i in killer_dict.items():
+                if i[1]:
+                    return i[0]
+
+    # 开始
+    def start(self):
+        self.tf_perm(0)
+        self.says_deal()
+        self.deal_list = self.detect_deal_with_tf(self.deal_list)
+        for i in self.tf_total:
+            self.deal_says_total.append(self.says_deal_with_tf(i)[:])
+        for i in self.deal_says_total:
+            res_per = self.comflict_detect(i)
+            if res_per:
+                self.really_says.append(i)
+        res = []
+        for i in self.really_says:
+            res_tem = self.gene_killer(i)
+            if res_tem:
+                res.append(res_tem)
+        if len(res) == 1:
+            print("凶手是%s" % res[0])
+        elif len(res) > 1:
+            print("凶手有多解：%s" % str(res))
+        else:
+            print("无解")
+
+
+gk1 = Grab_killer(["not A", "is C", "is D", "False C"], true_count=3)
+gk1.start()
+gk2 = Grab_killer(["not A", "is D", "not B", "False C"], true_count=2)
+gk2.start()
+
+
+
