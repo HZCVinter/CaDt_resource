@@ -1,0 +1,181 @@
+template<typename T>
+void print(const T &ct, const string &end = "\n", const string &sep = ", ", const string &bracket = "[]") {
+    cout << ct << end;
+}
+
+
+template<>
+void print(const bool &ct, const string &end, const string &sep, const string &bracket) {
+    if (ct)
+        cout << "true" << end;
+    else
+        cout << "false" << end;
+}
+
+template<typename T>
+void print(const vector<T> &ct, const string &end = "\n", const string &sep = ", ", const string &bracket = "[]") {
+    cout << bracket[0];
+    auto next_it = ct.begin();
+    next_it++;
+    for (auto it = ct.begin(); it != ct.end(); it++, next_it++)
+        if (next_it != ct.end()) {
+            print(*it, "");
+            cout << sep;
+        } else {
+            print(*it, "");
+        }
+    cout << bracket[1] << end;
+}
+
+template<typename T>
+void print(const deque<T> &ct, const string &end = "\n", const string &sep = ", ", const string &bracket = "[]") {
+    cout << bracket[0];
+    auto next_it = ct.begin();
+    next_it++;
+    for (auto it = ct.begin(); it != ct.end(); it++, next_it++)
+        if (next_it != ct.end()) {
+            print(*it, "");
+            cout << sep;
+        } else {
+            print(*it, "");
+
+        }
+    cout << bracket[1] << end;
+}
+
+template<typename T>
+void print(const list<T> &ct, const string &end = "\n", const string &sep = ", ", const string &bracket = "[]") {
+    cout << bracket[0];
+    auto next_it = ct.begin();
+    next_it++;
+    for (auto it = ct.begin(); it != ct.end(); it++, next_it++)
+        if (next_it != ct.end()) {
+            print(*it, "");
+            cout << sep;
+        } else {
+            print(*it, "");
+        }
+    cout << bracket[1] << end;
+}
+
+template<typename T>
+void print(const set<T> &ct, const string &end = "\n", const string &sep = ", ", const string &bracket = "{}") {
+    cout << bracket[0];
+    auto next_it = ct.begin();
+    next_it++;
+    for (auto it = ct.begin(); it != ct.end(); it++, next_it++)
+        if (next_it != ct.end()) {
+            print(*it, "");
+            cout << sep;
+        } else {
+            print(*it, "");
+
+        }
+    cout << bracket[1] << end;
+}
+
+template<typename T>
+void print(const multiset<T> &ct, const string &end = "\n", const string &sep = ", ", const string &bracket = "{}") {
+    cout << bracket[0];
+    auto next_it = ct.begin();
+    next_it++;
+    for (auto it = ct.begin(); it != ct.end(); it++, next_it++)
+        if (next_it != ct.end()) {
+            print(*it, "");
+            cout << sep;
+        } else {
+            print(*it, "");
+        }
+    cout << bracket[1] << end;
+}
+
+template<typename T1, typename T2>
+void print(const pair<T1, T2> &ct, const string &end = "\n", const string &sep = ": ", const string &bracket = "{}") {
+    cout << bracket[0];
+    print(ct.first, "");
+    cout << sep;
+    print(ct.second, "");
+    cout << bracket[1] << end;
+}
+
+template<typename T>
+void print(Array<T> &ct) {
+    ct.print();
+}
+
+template<typename T>
+void print(T start, T stop, const string &end = "\n", const string &sep = ", ", const string &bracket = "[]") {
+    cout << bracket[0];
+    auto next_it = start;
+    next_it++;
+    for (auto it = start; it != stop; it++, next_it++)
+        if (next_it != stop) {
+            print(*it, "");
+            cout << sep;
+        } else {
+            print(*it, "");
+            cout << bracket[1] << end;
+        }
+}
+
+template<typename T1, typename T2>
+void print(const map<T1, T2> &ct, const string &end = "\n", const string &sep = ", ", const string &bracket = "{}") {
+    if (ct.size() == 0) {
+        cout << bracket << end;
+        return;
+    }
+    cout << bracket[0];
+    auto next_it = ct.begin();
+    next_it++;
+    for (auto it = ct.begin(); it != ct.end(); it++, next_it++)
+        if (next_it != ct.end()) {
+            print(it->first, "");
+            cout << ": ";
+            print(it->second, "");
+            cout << sep;
+        } else {
+            print(it->first, "");
+            cout << ": ";
+            print(it->second, "");
+        }
+    cout << bracket[1] << end;
+}
+
+template<typename T>
+void print(const stack<T> &ct, const string &end = "\n", const string &sep = ", ", const string &bracket = "<]") {
+    stack temp = ct;
+    cout << bracket[0];
+    while (!temp.empty()) {
+        print(temp.top(), "");
+        temp.pop();
+        if (!temp.empty())
+            cout << sep;
+    }
+    cout << bracket[1] << end;
+}
+
+template<typename T>
+void print(const queue<T> &ct, const string &end = "\n", const string &sep = ", ", const string &bracket = "<>") {
+    queue temp = ct;
+    cout << bracket[0];
+    while (!temp.empty()) {
+        print(temp.front(), "");
+        temp.pop();
+        if (!temp.empty())
+            cout << sep;
+    }
+    cout << bracket[1] << end;
+}
+
+template<typename T>
+void print(const T t[], int length, const string &end = "\n", const string &sep = ", ", const string &bracket = "[]") {
+    cout << bracket[0];
+    for (int i = 0; i < length; i++)
+        if (i != length - 1) {
+            print(t[i], "");
+            cout << sep;
+        } else {
+            print(t[i], "");
+        }
+    cout << bracket[1] << end;
+}
